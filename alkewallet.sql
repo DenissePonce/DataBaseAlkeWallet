@@ -1,90 +1,75 @@
--- Crear la base de datos 
-CREATE DATABASE IF NOT EXISTS alke_wallet;
+---Creamos la base de datos de alkewallet--
+CREATE DATABASE AlkeWallet;
 
--- Usar la base de datos 
-USE alke_wallet;
+--usamos la base de datos
+USE AlkeWallet;
 
--- Crear tabla Usuario
-CREATE TABLE user (
-    user_id INT PRIMARY KEY,
-    name VARCHAR(50),
-    email VARCHAR(50),
-    password VARCHAR(50),
-    saldo DECIMAL(10,2)
+--creamos la tabla usuario
+CREATE TABLE Usuario (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    correo_electronico VARCHAR(100) NOT NULL UNIQUE,
+    contraseña VARCHAR(100) NOT NULL,
+    saldo DECIMAL(10, 2) NOT NULL DEFAULT 0.00
 );
-
--- Crear tabla Moneda
-CREATE TABLE currency (
-    currency_id INT PRIMARY KEY,
-    currency_name VARCHAR(50),
-    currency_symbol VARCHAR(10)
+--creamos la tabla moneda
+CREATE TABLE Moneda (
+    currency_id INT AUTO_INCREMENT PRIMARY KEY,
+    currency_name VARCHAR(50) NOT NULL,
+    currency_symbol VARCHAR(10) NOT NULL
 );
-
--- Crear tabla Transacción
-CREATE TABLE Transaction (
-    transaction_id INT PRIMARY KEY,
-    sender_user_id INT,
-    receiver_user_id INT,
-    importe DECIMAL(10,2),
-    transaction_date DATE,
-    id_Moneda INT,
-    FOREIGN KEY (sender_user_id) REFERENCES User(user_id),
-    FOREIGN KEY (receiver_user_id) REFERENCES Usero(user_id),
-    FOREIGN KEY (id_currency) REFERENCES currency(currency_id)
+--Creamos la tabla transacción
+CREATE TABLE Transaccion (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_user_id INT NOT NULL,
+    receiver_user_id INT NOT NULL,
+    importe DECIMAL(10, 2) NOT NULL,
+    transaction_date DATETIME NOT NULL,
+    currency_id INT NOT NULL,
+    FOREIGN KEY (sender_user_id) REFERENCES Usuario(user_id),
+    FOREIGN KEY (receiver_user_id) REFERENCES Usuario(user_id),
+    FOREIGN KEY (currency_id) REFERENCES Moneda(currency_id)
 );
+--INSERTAMOS DATOS:
+--Tabla usuario
+INSERT INTO Usuario (nombre, correo_electronico, contraseña, saldo) VALUES
+('Juan Pérez', 'juan.perez@gmail.com', 'password123', 100.00),
+('María García', 'maria.garcia@gmail.com', 'securepass', 250.50),
+('Carlos López', 'carlos.lopez@gmail.com', 'mypassword', 500.75);
 
- /*insertar datos a tabla usuario*/
-insert into user (user_id, name , email , password, saldo) 
-values
-(1, "Juanito Perez", "jperez@gmail.com","12345678", 100000), 
-(2, "Carolina Tapia", "ctapia@gmail.com","12345678", 350000), 
-(3, "Camila Lara", "c.lara@gmail.com","12345678", 1200000), 
-(4, "Antonio Parra", "a.parra@gmail.com","12345678", 800000), 
-(5, "Clarisa Vergara", "c.vergara@gmail.com","12345678", 550000);
+--tabla moneda
+INSERT INTO Moneda (currency_name, currency_symbol) VALUES
+('Dólar Estadounidense', 'USD'),
+('Euro', 'EUR'),
+('Peso Chileno', 'CLP');
 
-/*insertar datos en la tabla transacción*/
-insert into transaction (transaction_id, sender_user_id, receiver_user_id, importe, transaction_date)
-values
-("1","3", "5", "5.000", "1", "2024-10-01"),
-("2","4", "1", "30.000", "3", "2024-24-02"),
-("3","2", "3", "15.000", "2", "2024-11-03"),
-("4","1", "4", "101.000", "2", "2024-21-01"),
-("5","3", "2", "45.000", "2", "2024-20-02")
-;
+--Tabla transaccion
+INSERT INTO Transaccion (sender_user_id, receiver_user_id, importe, transaction_date, currency_id) VALUES
+(1, 2, 50.00, '2024-07-11 10:30:00', 1),  -- Juan Pérez envía a María García 50 USD
+(2, 3, 75.25, '2024-07-11 11:00:00', 2),  -- María García envía a Carlos López 75.25 EUR
+(3, 1, 100.000, '2024-07-11 12:15:00', 3);  -- Carlos López envía a Juan Pérez 100.000 CLP
 
-/*insertar moneda */
-insert into currency (currency_id, currency_name, currency_symbol) 
-values
-("1", "peso", "CLP$"),
-("2", "dolar", "US$"),
-("3", "euro", "€")
-;
 
-/*Consulta para obtener el nombre de la moneda elegida por un
-usuario específico*/
-SELECT u.name AS nombre_usuario, c.currency_name AS nombre_moneda
-FROM user u
-JOIN Transaction t ON u.user_id = t.sender_user_id OR u.user_id = t.receiver_user_id
-JOIN currency m ON t.id_currency = m.currency_id
-WHERE u.user_id = 5;
+--CONSULTAS PARA OBTENER:
+--moneda elegida
+SELECT Moneda.currency_name 
+FROM Transaccion
+JOIN Moneda ON Transaccion.currency_id = Moneda.currency_id
+WHERE Transaccion.sender_user_id = [usuario_id] OR Transaccion.receiver_user_id = [usuario_id];
 
-/*Consulta para obtener todas las transacciones registradas*/
-SELECT*
-FROM transaction;
+--transacciones registradas
+SELECT * FROM Transaccion;
 
-/*Consulta para obtener todas las transacciones realizadas por un
-usuario específico*/
+--transacciones realizadas por usuario en especifico
 SELECT * 
-FROM transaction
-WHERE sender_user_id = 3 ;
+FROM Transaccion 
+WHERE sender_user_id = [usuario_id] OR receiver_user_id = [usuario_id];
 
-/*Sentencia DML para modificar el campo correo electrónico de un
-usuario específico*/
-UPDATE user
-SET password = 'nuevapassword'
-WHERE user_id = 1; 
+--modificar el campo correo electrónico de un usuario específico
+UPDATE Usuario 
+SET correo_electronico = '[nuevo_correo_electronico]' 
+WHERE user_id = [usuario_id];
 
-/*Sentencia para eliminar los datos de una transacción (eliminado de
-la fila completa)*/
-DELETE FROM Transaction
-WHERE transaction_id = 3;
+--Eliminar datos de una transaccion
+DELETE FROM Transaccion 
+WHERE transaction_id = [transaction_id];
